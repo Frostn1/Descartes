@@ -1,0 +1,50 @@
+# The Descartes language (pronounced ZeKal), where almost everything is a Cartesian Product
+
+Tetromino = I | L | J | O | S | Z | T
+TetrominoSingleCoord = 0..3
+TetrominoCoord = TetrominoSingleCoord * TetrominoSingleCoord
+Bool = True | False
+pixel = Tetromino * TetrominoCoord -> Bool
+pixel I * 0 * _ = True
+pixel I * _ * _ = False
+pixel L * (0 | 1 | 2) * 0 = True
+pixel L * 2 * 1 = True
+pixel L * _ * _ = False
+...
+
+Rotation = R0 | R90 | R180 | R270
+rotate = Rotation -> Rotation
+rotate R0 = R90
+rotate R90 = R180
+...
+
+rotate_coord = Rotation * TetrominoCoord
+rotate_coord R0 * c = c
+rotate_coord R90 * a * b = (sub 4 b) * a
+rotate_coord R180 * c = rotate_coord (rotate_coord R90) * c
+
+rotated_pixel = Rotation * Tetromino * TetrominoCoord -> Bool
+rotated_pixel r * t * c = pixel t * rotate_coord r c
+
+
+BoardCoord = 0..9 * 0..19
+Board = Bool ^ BoardCoord
+
+does_collide = Rotation * Tetromino * BoardCoord * Board -> Bool
+does_collide r * t * c * b =
+    or * False / TetrominoCoord (tc -> does_collide_pixel r * t * c * b * tc)
+
+# this is how you'd add the squares of 1..10:
+# add * 0 / 1..10 (x -> mul x x)
+
+board_pixel = BoardCoord * Board -> Bool
+board_pixel c * b = at b * c
+
+does_collide_pixel = Rotation * Tetromino * BoardCoord * Board * TetrominoCoord -> Bool
+does_collide_pixel r * t * c * b * tc = and (default False (at b (add? c tc))) (rotated_pixel r * t * c)
+
+default = A * (A | ?) -> A
+default d * ? = d
+default _ * a = a
+
+add? = A * B -> ? | A

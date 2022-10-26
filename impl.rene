@@ -1,0 +1,5 @@
+Tree = (T | E) * F
+Tree = (E * F) | (T * F)
+Tree = T
+Tetromino = I | L | J | O | S | Z | T
+Rotation = R0 | R90 | R180 | R270
